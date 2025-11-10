@@ -1,0 +1,10 @@
+pandas
+scipy
+scikit-learn
+numpy
+autofeat
+featuretools
+autogluon
+boruta
+Fpdf2
+Matplotlib

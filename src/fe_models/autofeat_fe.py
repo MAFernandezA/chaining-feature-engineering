@@ -1,9 +1,10 @@
-import numpy as np # type: ignore
-import pandas as pd # type: ignore
-from autofeat import AutoFeatClassifier # type: ignore
-from sklearn.base import BaseEstimator, TransformerMixin # type: ignore
+import numpy as np 
+import pandas as pd 
+from autofeat import AutoFeatClassifier 
+from sklearn.base import BaseEstimator, TransformerMixin
 
-# Clase que encapsula AutoFeat y se adhiere a la interfaz de Scikit-learn
+
+
 class AutoFeatTransformer(BaseEstimator, TransformerMixin):
     """
     Clase Wrapper para AutoFeatClassifier/Regressor.
@@ -55,4 +56,3 @@ class AutoFeatTransformer(BaseEstimator, TransformerMixin):
             # Crea nombres de columnas genéricos si no los tiene
             return pd.DataFrame(X, columns=[f'c{i}' for i in range(X.shape[1])])
         return X
-

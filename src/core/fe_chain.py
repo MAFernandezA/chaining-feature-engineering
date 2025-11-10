@@ -1,11 +1,10 @@
-import numpy as np # type: ignore
-from src.fe_models.autofeat_fe import AutoFeatTransformer 
-from src.fe_models.polynomial_fe import PolynomialFeatTransformer
-from src.fe_models.featuretools_fe import FeatureToolsTransformer
-from src.fe_models.boruta_fe import BorutaFeatureSelector
-from sklearn.decomposition import PCA
 from src.fe_models.list_fe import get_list_available_fes
 from src.core.utils import print_dataset_sample
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import pandas as pd 
+import numpy as np
+
 
 
 class FeatureEngineeringChainer:
@@ -20,7 +19,6 @@ class FeatureEngineeringChainer:
         self.pca_model = PCA(n_components=0.95, random_state=42)
         
         # Lista inicial de FEs disponibles (puedes añadir más aquí)
-        # Se guarda como (nombre, instancia_de_la_clase)
         self.available_fes = get_list_available_fes()
         
         self.initial_accuracy = 0.0
@@ -28,6 +26,11 @@ class FeatureEngineeringChainer:
         self.current_X_train = X_train.copy()
         self.current_X_test = X_test.copy()
         self.chain_results = []
+
+        self.post_fe_scaler = StandardScaler()
+
+        self.best_X_train = X_train.copy()
+        self.best_X_test = X_test.copy()
     
     def run_initial_evaluation(self):
         """Evalúa el dataset BASE (sin ningún FE aplicado)."""
@@ -74,7 +77,12 @@ class FeatureEngineeringChainer:
                     print(f"Error al aplicar {fe_name}. Saltando este FE. Error: {e}")
                     continue
 
-
+                print("... Aplicando Estandarización a las características generadas ...")
+                X_train_new_scaled = self.post_fe_scaler.fit_transform(X_train_new)
+                X_test_new_scaled = self.post_fe_scaler.transform(X_test_new)
+                X_train_new = X_train_new_scaled
+                X_test_new = X_test_new_scaled
+                
                 print_dataset_sample(X_train_new, fe_name)
 
                 if self.apply_pca_dynamic:
@@ -101,7 +109,7 @@ class FeatureEngineeringChainer:
                 model = self.ml_scorer
                 current_acc = model.train_and_evaluate(X_train_new, self.y_train, X_test_new, self.y_test)
                 
-                print(f"   Accuracy con {fe_name}: {current_acc:.4f}")
+                print(f"Accuracy con {fe_name}: {current_acc:.4f}")
                 
                 # 5. Verificar si es el mejor de este ciclo
                 if current_acc > best_acc_in_cycle:
@@ -127,6 +135,8 @@ class FeatureEngineeringChainer:
                 if best_acc_in_cycle > self.best_accuracy:
                     print(f"\n¡Éxito! El FE '{result['name']}' mejoró el Accuracy de {self.best_accuracy:.4f} a {best_acc_in_cycle:.4f}")
                     self.best_accuracy = best_acc_in_cycle
+                    self.best_X_train = result['X_train'].copy() 
+                    self.best_X_test = result['X_test'].copy()
                 else:
                     print(f"\nEncadenando FE '{result['name']}' aunque el Accuracy haya cambiado de {self.best_accuracy:.4f} a {best_acc_in_cycle:.4f}")        
 
@@ -135,13 +145,15 @@ class FeatureEngineeringChainer:
                 self.current_X_test = result['X_test']
                 
                 self.available_fes = [(n, t) for n, t in self.available_fes if n != result['name']]
+                X_train_to_report = result['X_train'] if isinstance(result['X_train'], (pd.DataFrame, np.ndarray)) else np.array(result['X_train'])
 
                 self.chain_results.append({
                     "step": len(self.chain_results) + 1,
                     "fe_added": result['name'],
                     "new_accuracy": best_acc_in_cycle,
                     "new_shape": self.current_X_train.shape,
-                    "is_global_best": is_global_best_flag
+                    "is_global_best": is_global_best_flag,
+                    "sample_X_train": X_train_to_report[:5]
                 })
                 
             else:

@@ -1,7 +1,6 @@
-import pandas as pd #type: ignore
-from autogluon.tabular import TabularPredictor #type: ignore
-from sklearn.metrics import accuracy_score #type: ignore
-import numpy as np #type: ignore
+import pandas as pd 
+from autogluon.tabular import TabularPredictor 
+import numpy as np 
 
 class AutoGluon:
     """

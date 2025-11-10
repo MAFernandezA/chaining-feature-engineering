@@ -1,8 +1,9 @@
-import numpy as np # type: ignore
-import pandas as pd # type: ignore
-from boruta import BorutaPy # type: ignore
-from sklearn.base import BaseEstimator, TransformerMixin # type: ignore
-from sklearn.ensemble import RandomForestClassifier # type: ignore
+import numpy as np 
+from boruta import BorutaPy 
+from sklearn.base import BaseEstimator, TransformerMixin 
+from sklearn.ensemble import RandomForestClassifier 
+
+
 
 class BorutaFeatureSelector(BaseEstimator, TransformerMixin):
     """

@@ -1,6 +1,7 @@
-import pandas as pd # type: ignore
-from sklearn.decomposition import PCA # type: ignore
-from sklearn.model_selection import train_test_split # type: ignore
+import pandas as pd 
+from sklearn.decomposition import PCA 
+from sklearn.model_selection import train_test_split 
+
 
 
 def apply_pca_reduction(X, n_components=0.95, random_state=42):

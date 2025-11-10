@@ -1,9 +1,9 @@
 from fpdf import FPDF 
 import matplotlib.pyplot as plt 
 import pandas as pd
-import numpy as np
 import io 
 import os 
+
 
 
 def plot_chaining_accuracy(chain_results, initial_accuracy, dataset_name):
@@ -75,7 +75,10 @@ def generate_pdf_report(dataset_info, fe_chain_instance, output_filename="report
     dataset_name = dataset_info['name']
     original_shape = dataset_info['original_shape']
     pca_base_applied = dataset_info['pca_base_applied']
+    base_dataset_shape = dataset_info.get('base_dataset_shape', fe_chain_instance.current_X_train.shape)
     base_X_train = dataset_info['base_X_train']    
+    execution_time = dataset_info['execution_time']
+    pca_threshold = fe_chain_instance.pca_threshold
     
     # 2. Inicializar FPDF
     pdf = FPDF()
@@ -92,6 +95,7 @@ def generate_pdf_report(dataset_info, fe_chain_instance, output_filename="report
     pdf.cell(0, 7, f"Nombre del dataset: {dataset_name}", 0, 1)
     pdf.cell(0, 7, f"Tamaño original: {original_shape}", 0, 1)
     pdf.cell(0, 7, f"Modelo evaluador seleccionado: {ml_scorer_name}", 0, 1)
+    pdf.cell(0, 7, f"Tiempo de ejecución total: {execution_time}", 0, 1)
     
     # --- PCA INFO ---
     pca_base = 'Sí' if dataset_info.get('pca_base_applied') else 'No'
@@ -99,8 +103,11 @@ def generate_pdf_report(dataset_info, fe_chain_instance, output_filename="report
     pdf.cell(0, 7, f"PCA en dataset base: {pca_base}", 0, 1)
     pdf.cell(0, 7, f"PCA dinámico en encadenamiento: {pca_dynamic}", 0, 1)
     
+    if pca_dynamic == 'Sí':
+        pdf.cell(0, 7, f"Tamaño (features) para aplicar PCA dinámico: {pca_threshold}", 0, 1)
+
     if pca_base == 'Sí':
-        pdf.cell(0, 7, f"Tamaño después de PCA base: {fe_chain_instance.current_X_train.shape}", 0, 1)
+        pdf.cell(0, 7, f"Tamaño después de PCA base: {base_dataset_shape}", 0, 1)
     pdf.ln(5)
 
     # --- Accuracy BASE ---
@@ -137,6 +144,11 @@ def generate_pdf_report(dataset_info, fe_chain_instance, output_filename="report
         # Opcional: Mostrar la muestra del dataset en este paso (requiere guardar X_train_new)
         # Esto es complejo, ya que X_train_new no se guarda en chain_results.
         # Por ahora, solo reportaremos la forma.
+
+        if 'sample_X_train' in step_data:
+            pdf.set_font("Courier", "", 8)
+            pdf.multi_cell(0, 4, get_sample_text(step_data['sample_X_train'], max_rows=5, max_cols=10))
+            
         pdf.ln(2)
 
     # --- GRÁFICO DE LÍNEA ---

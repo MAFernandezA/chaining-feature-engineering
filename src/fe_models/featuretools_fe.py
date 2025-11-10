@@ -1,7 +1,9 @@
-import numpy as np # type: ignore
-import pandas as pd# type: ignore
-import featuretools as ft # type: ignore
-from sklearn.base import BaseEstimator, TransformerMixin # type: ignore
+import numpy as np 
+import pandas as pd
+import featuretools as ft 
+from sklearn.base import BaseEstimator, TransformerMixin 
+
+
 
 class FeatureToolsTransformer(BaseEstimator, TransformerMixin):
     """

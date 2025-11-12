@@ -9,7 +9,7 @@ def select_ml_scorer():
     
     # Mapeo de opciones a instancias de clases
     available_scorers = {
-        1: ("AutoGluon (Alto Rendimiento)", AutoGluon(time_limit=300)),
+        1: ("AutoGluon (Alto Rendimiento)", AutoGluon(time_limit=150)),
         2: ("RandomForest (Rápido y Base)", RandomForest()),
         3: ("SVM", SVM()),
         4: ("KNN", KNN())

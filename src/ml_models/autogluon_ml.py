@@ -7,11 +7,29 @@ class AutoGluon:
     Clase de medición (Scorer) que utiliza AutoGluon para entrenar y evaluar
     la calidad del dataset con las features actuales.
     """
-    def __init__(self, time_limit=30, random_state=42):
+    def __init__(self, time_limit=30, random_state=42, ask_for_gpu=True):
         # Time_limit es crucial para controlar el tiempo que tarda AutoGluon
         self.time_limit = time_limit
         self.label_column = "fe_label" # Nombre temporal para la columna de etiquetas
         self.predictor = None
+        self.ag_args_fit_gpu = {}
+
+        if ask_for_gpu:
+            use_gpu = input("¿Desea utilizar la GPU (tarjeta gráfica) para acelerar el entrenamiento? (s/n): ").lower().strip()
+            
+            if use_gpu == 's':
+                print("GPU habilitada para AutoGluon.")
+                self.ag_args_fit_gpu = {
+                    'num_gpus': 1 
+                }
+            else:
+                print("GPU deshabilitada para AutoGluon. Usando solo CPU.")
+                self.ag_args_fit_gpu = {
+                    'num_gpus': 0
+                }
+        else:
+            # Opción por defecto (sin preguntar, se puede configurar desde main.py)
+            self.ag_args_fit_gpu = {'num_gpus': 0}
 
     def train_and_evaluate(self, X_train, y_train, X_test, y_test):
         """
@@ -32,6 +50,7 @@ class AutoGluon:
         train_data = X_train_df.copy()
         train_data[self.label_column] = y_train
 
+
         # 2. Inicializar y Entrenar AutoGluon
         self.predictor = TabularPredictor(
             label=self.label_column,
@@ -41,7 +60,8 @@ class AutoGluon:
         ).fit(
             train_data,
             presets="best_quality",
-            time_limit=self.time_limit
+            time_limit=self.time_limit,
+            ag_args_fit=self.ag_args_fit_gpu
         )
 
         # 3. Preparar DataFrame de Prueba
